@@ -17,4 +17,7 @@ def create_app(app_name):
     from hosts import hosts
     app.register_blueprint(hosts, url_prefix='/host')
 
+    from api_1_0 import api
+    app.register_blueprint(api, url_prefix='/api/v1.0')
+
     return app
