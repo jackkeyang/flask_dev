@@ -1,4 +1,5 @@
 from flask import jsonify
+from . import api
 
 def bad_request(message):
     response = jsonify({'error': 'bad request', 'message': message})
@@ -15,3 +16,8 @@ def forbidden(message):
     response.status_code = 403
     return response 
 
+@api.errorhandler(404)
+def notfound(message):
+    response = jsonify({'error': 'Not Found', 'message': '404 Not Found'})
+    response.status_code = 404
+    return response

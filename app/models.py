@@ -6,28 +6,6 @@ from flask import current_app
 from flask_login import UserMixin
 
 
-users_roles = db.Table('users_roles',
-                        db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
-                        db.Column('roles_id', db.Integer, db.ForeignKey('roles.id'))
-)
-
-roles_perm = db.Table('roles_prem',
-                        db.Column('roles_id', db.Integer, db.ForeignKey('roles.id')),
-                        db.Column('perm_id', db.Integer, db.ForeignKey('permissions.id'))
-)
-
-class Roles(db.Model):
-    __tablename__ = 'roles'
-    id = db.Column(db.Integer, primary_key=True)
-    role_name = db.Column(db.String(64), unique=True)
-    prem_id = db.relationship('Permissions', secondary=roles_perm, backref='roles')
-
-class Permissions(db.Model):
-    __tablename__ = 'permissions'
-    id = db.Column(db.Integer, primary_key=True)
-    prem_name = db.Column(db.String(64), unique=True)
-    comments = db.Column(db.String(128))
-
 group_users = db.Table('group_user',
                         db.Column('group_id', db.Integer, db.ForeignKey('groups.id')),
                         db.Column('user_id', db.Integer, db.ForeignKey('users.id'))
@@ -40,18 +18,18 @@ class Group(db.Model):
 
 class Users(UserMixin, db.Model):
     roles = {
-             'admin': 1,
-             'user': 2
+             1: 'ADMIN',
+             2: 'USER'
              }
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64))
-    name_en = db.Column(db.String(64), unique=True)
+    name_cn = db.Column(db.String(64), unique=True)
     password_hash = db.Column(db.String(128))
     email = db.Column(db.String(64))
     phone = db.Column(db.String(64))
+    role = db.Column(db.String(64))
     group_id = db.relationship('Group', secondary=group_users, backref='users')
-    role_id = db.relationship('Roles', secondary=users_roles, backref='users')
 
     @property
     def password(self):
@@ -68,7 +46,7 @@ class Users(UserMixin, db.Model):
     def insert_user():
         user = Users.query.filter_by(username='admin').first()
         if user is None:
-            user = Users(username='admin', name_en='管理员', role=Users.roles.get('admin'))
+            user = Users(username='admin', name_en='管理员', role=Users.roles.get(1))
             user.password = '123456'
             db.session.add(user)
             db.session.commit()
@@ -98,8 +76,9 @@ class Users(UserMixin, db.Model):
 
     def to_json(self):
         json_user = {
+            'id': self.id,
             'username': self.username,
-            'name_en': self.name_en,
+            'name_cn': self.name_cn,
             'email': self.email,
             'phone': self.phone,
             'role': self.role,

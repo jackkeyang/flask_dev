@@ -18,24 +18,13 @@ def verify_password(username_or_token, password):
     g.current_user = user
     g.token_used = use_token
     return True
-    # if username_or_token is None:
-    #     return False
-    # if password is None:
-    #     g.current_user = Users.verify_auth_token(username_or_token)
-    #     g.token_used = True
-    #     return g.current_user is not None
-    # user = Users.query.filter_by(username=username_or_token).first()
-    # if not user:
-    #     return False
-    # g.current_user = user
-    # g.token_used = False
-    # return user.verify_password(password)
 
 # @api.before_request
 # @auth.login_required
 # def before_request():
-#     # if not g.current_user.is_anonymous and not g.current_user.confiremd:
-#     if not g.current_user.is_anonymous or g.token_used:
+#     if not g.current_user.is_anonymous and not g.current_user.confiremd:
+#         print g.token_used
+#         print g.current_user
 #         return forbidden('Unconfirmed account')
 
 @api.route('/tokens', methods=['POST'])
@@ -44,9 +33,3 @@ def get_token():
     if g.current_user.is_anonymous or g.token_used:
         return unauthorized("Invalid credentials")
     return jsonify({'token': g.current_user.getnerate_reset_token(expiration=3600), 'expiration': 3600})
-
-@api.route('/test')
-@auth.login_required
-def test():
-    print 'test'
-    return 'okaaaaaaaa'
