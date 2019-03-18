@@ -23,13 +23,7 @@ def users():
 @role_required('ADMIN')
 def new_users():
     data = request.form.to_dict()
-    user = Users(username = data.get('username'),
-                 name_cn = data.get('name_cn', None),
-                 email = data.get('email', None),
-                 phone = data.get('phone', None),
-                 role = data.get('role', None)
-                )
-    user.password = data.get('password')
+    user = Users(**data)
     db.session.add(user)
     db.session.commit()
     return jsonify({'code': 200, 'message': '用户添加成功'})
@@ -44,15 +38,17 @@ def user(uid):
         return jsonify({'code': 200, 'message': user.to_json()})
     elif request.method == 'PUT':
         data = request.form.to_dict()
-        uid = data.get('id', None)
-        user = Users.query.filter_by(id=uid).first_or_404()
-        user.username = data.get('username', user.username)
-        user.name_cn = data.get('name_cn', user.name_cn)
-        user.role = data.get('role', user.role)
-        user.email = data.get('email', user.email)
-        user.phone = data.get('phone', user.phone)
-        user.group = data.get('group', None)
-        db.session.add(user)
+        print data
+        #uid = data.get('id', None)
+        Users.query.filter_by(id=uid).update(**data)
+        # user = Users.query.filter_by(id=uid).first_or_404()
+        # user.username = data.get('username', user.username)
+        # user.name_cn = data.get('name_cn', user.name_cn)
+        # user.role = data.get('role', user.role)
+        # user.email = data.get('email', user.email)
+        # user.phone = data.get('phone', user.phone)
+        # user.group = data.get('group', None)
+        # db.session.add(user)
         db.session.commit()
         return jsonify({'code': 200, 'message': '用户修改成功'})
 
