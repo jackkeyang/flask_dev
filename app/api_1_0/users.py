@@ -1,7 +1,7 @@
 #coding=utf8
 from . import api
 from ..models import Users
-from flask import g, jsonify, request
+from flask import g, jsonify, request, url_for
 from errors import unauthorized, bad_request
 from authentication import auth
 from ..models import db
@@ -11,11 +11,21 @@ from decorators import role_required, self_required
 @api.route('/users')
 @auth.login_required
 def users():
-    users = Users.query.all()
-    u_list = []
-    for u in users:
-        u_list.append(u.to_json())
-    return jsonify({'code': 200, 'message': u_list})
+    page = request.args.get('page', 1, type=int)
+    pagination = Users.query.paginate(page, per_page=2, error_out=False)
+    users = pagination.items
+    prev = None
+    if pagination.has_prev:
+        prev = url_for('api.users', page=page - 1, _external=True)
+    next = None
+    if pagination.has_next:
+        next = url_for('api.users', page=page + 1, _external=True)
+    return jsonify({
+        'users': [user.to_json() for user in users],
+        'prev': prev,
+        'next': next,
+        'count': pagination.total
+    })
 
 # 添加用户
 @api.route('/users', methods=['POST'])
@@ -38,9 +48,6 @@ def user(uid):
         return jsonify({'code': 200, 'message': user.to_json()})
     elif request.method == 'PUT':
         data = request.form.to_dict()
-        print data
-        #uid = data.get('id', None)
-        # Users.query.filter_by(id=uid).update(**data)
         user = Users.query.filter_by(id=uid).first_or_404()
         user.username = data.get('username', user.username)
         user.name_cn = data.get('name_cn', user.name_cn)

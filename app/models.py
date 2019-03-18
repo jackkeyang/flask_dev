@@ -20,7 +20,7 @@ class Users(UserMixin, db.Model):
     roles = {
              1: 'ADMIN',
              2: 'USER'
-             }
+            }
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64))
@@ -62,7 +62,6 @@ class Users(UserMixin, db.Model):
             data = s.loads(token)
         except:
             return None
-        print data
         return Users.query.get(data['id'])
 
     def get_user_groups(self):
@@ -71,7 +70,6 @@ class Users(UserMixin, db.Model):
         if groups:
             for g in groups:
                 gs[g.id] = g.name
-            print gs
         return gs
 
     def to_json(self):
