@@ -13,9 +13,9 @@ def create_app(app_name):
     app.config.from_object('app.schduler')
     db.init_app(app)
 
-    # scheduler = APScheduler()
-    # scheduler.init_app(app)
-    # scheduler.start()
+    scheduler = APScheduler()
+    scheduler.init_app(app)
+    scheduler.start()
 
     from auth import auth
     app.register_blueprint(auth, url_prefix='/auth')
