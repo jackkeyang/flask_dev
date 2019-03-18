@@ -2,7 +2,6 @@ class Config:
     SECRET_KEY = '0LAFvVAbcufUX1SVNSaRBCp2PgIqVVz4'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
-
     @staticmethod
     def init_app(app):
         pass
