@@ -13,7 +13,6 @@ def login():
         user = Users.query.filter_by(username=data.get('username')).first()
         if user and user.verify_password(data.get('password')):
             login_user(user)
-            session['username'] = user.username
             return redirect(url_for('auth.dashboard'))
         else:
             flash('Username or Password is Error!')
@@ -21,7 +20,9 @@ def login():
 
 @auth.route('/dashboard')
 def dashboard():
-    data = {
-        'username': session.get('username', None)
-    }
-    return render_template('dashboard.html', **data)
+    return render_template('dashboard.html')
+
+@auth.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('auth.login'))

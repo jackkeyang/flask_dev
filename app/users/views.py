@@ -8,4 +8,4 @@ def userlist():
     data = {
         'username': session.get('username', None)
     }
-    return render_template('userlist.html', **data)
+    return render_template('userlist.html')

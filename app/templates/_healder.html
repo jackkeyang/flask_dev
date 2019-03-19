@@ -2,7 +2,11 @@
     <!-- /.dropdown -->
     <li class="dropdown">
         <a class="dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false">
-            <i class="fa fa-user fa-fw"></i>{{ username }} <i class="fa fa-caret-down"></i>
+            <i class="fa fa-user fa-fw"></i>
+                {% if current_user.is_authenticated %}
+                    {{ current_user.username }}
+                {% endif %}
+            <i class="fa fa-caret-down"></i>
         </a>
         <ul class="dropdown-menu dropdown-user">
             <li><a href="#"><i class="fa fa-user fa-fw"></i> 用户信息</a>
@@ -10,7 +14,7 @@
             <li><a href="#"><i class="fa fa-gear fa-fw"></i> 设置</a>
             </li>
             <li class="divider"></li>
-            <li><a href="#"><i class="fa fa-sign-out fa-fw"></i> 退出</a>
+            <li><a href="{{url_for('auth.logout')}}"><i class="fa fa-sign-out fa-fw"></i> 退出</a>
             </li>
         </ul>
         <!-- /.dropdown-user -->
