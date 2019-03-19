@@ -4,7 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
 from flask_login import UserMixin
-
+from . import login_manager
 
 group_users = db.Table('group_user',
                         db.Column('group_id', db.Integer, db.ForeignKey('groups.id')),
@@ -84,6 +84,8 @@ class Users(UserMixin, db.Model):
         }
         return json_user
 
-
+@login_manager.user_loader
+def load_user(user_id):
+    return Users.query.get(int(user_id))
 
 
