@@ -12,7 +12,7 @@ from decorators import role_required, self_required
 @auth.login_required
 def users():
     page = request.args.get('page', 1, type=int)
-    pagination = Users.query.paginate(page, per_page=2, error_out=False)
+    pagination = Users.query.paginate(page, per_page=10, error_out=False)
     users = pagination.items
     prev = None
     if pagination.has_prev:

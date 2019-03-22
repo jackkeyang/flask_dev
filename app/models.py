@@ -21,6 +21,7 @@ class Users(UserMixin, db.Model):
              1: 'ADMIN',
              2: 'USER'
             }
+
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64))
@@ -28,7 +29,8 @@ class Users(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     email = db.Column(db.String(64))
     phone = db.Column(db.String(64))
-    role = db.Column(db.String(64))
+    role = db.Column(db.String(32))
+    status = db.Column(db.Boolean)
     group_id = db.relationship('Group', secondary=group_users, backref='users')
 
     @property
@@ -46,7 +48,7 @@ class Users(UserMixin, db.Model):
     def insert_user():
         user = Users.query.filter_by(username='admin').first()
         if user is None:
-            user = Users(username='admin', name_en='管理员', role=Users.roles.get(1))
+            user = Users(username='admin', name_cn='管理员', role=Users.roles.get(1), status=True)
             user.password = '123456'
             db.session.add(user)
             db.session.commit()
@@ -80,6 +82,7 @@ class Users(UserMixin, db.Model):
             'email': self.email,
             'phone': self.phone,
             'role': self.role,
+            'status': self.status,
             'groups': self.get_user_groups()
         }
         return json_user

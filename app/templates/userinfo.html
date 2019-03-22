@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block  breadcrumb_big %}
+用户管理
+{% endblock %}
+
+{% block  breadcrumb_small %}
+用户信息
+{% endblock %}
+
+{% block  content %}
+<!-- Advanced Tables -->
+<div class="panel panel-default">
+    <div class="panel-heading">
+        用户信息
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-lg-6 col-lg-offset-1">
+                <form role="form" id="updateForm">
+                    <input type="hidden"  name="id" value="{{ user.id }}">
+                    <div class="form-group">
+                        <label>用户名：</label>
+                        <input class="form-control" name="username" value="{{user.username}}">
+                    </div>
+                    <div class="form-group">
+                        <label>中文名：</label>
+                        <input class="form-control" name="name_cn" value="{{user.name_cn}}">
+                    </div>
+                    <div class="form-group">
+                        <label>电 话：</label>
+                        <input class="form-control" name="phone" value="{{user.phone}}">
+                    </div>
+                    <div class="form-group">
+                        <label>邮 箱：</label>
+                        <input class="form-control" name="email" value="{{user.email}}">
+                    </div>
+                    <div class="form-group">
+                        <label>角 色：</label>
+                        <label class="radio-inline">
+                            <input type="radio" name="role" value="1" {% if user.role == "ADMIN" %}checked=""{% endif %}>ADMIN
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="role" value="2" {% if user.role == "USER" %}checked=""{% endif %}>USER
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label>状 态：</label>
+                        <label class="radio-inline">
+                            <input type="radio" name="status" value="1" {% if user.status %}checked=""{% endif %}>启用
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="status" value="0" {% if not user.status %}checked=""{% endif %}>禁用
+                        </label>
+                    </div>
+
+                    <div class="form-group text-center">
+                    <button class="btn btn-default" id="upinfobtn">修改</button>
+                    <button type="reset" class="btn btn-default">重置</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+$("#upinfobtn").on("click",function(){
+    $.post("/users/userinfo", $("#updateForm").serialize(), function(data){
+        data = JSON.parse(data)
+        console.log(data)
+        location.href=data['next']
+    })
+    return false
+})
+</script>
+{% endblock %}
