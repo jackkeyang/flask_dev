@@ -31,6 +31,31 @@ def userinfo():
         db.session.commit()
         return json.dumps({'next': url_for("users.userlist")})
 
+@users.route('/useradd', methods=['GET', 'POST'])
+@login_required
+def useradd():
+    if request.method == 'GET':
+        return render_template('useradd.html')
+    else:
+        data = request.form.to_dict()
+
+        if data.get('status') == '1':
+            data['status'] = True
+        else:
+            data['status'] = False
+
+        print data
+        user = Users.query.filter_by(username=data.get('username')).first()
+        if not user:
+            user = Users(**data)
+            db.session.add(user)
+            db.session.commit()
+            return json.dumps({'next': url_for('users.userlist')})
+        else:
+            flash('%s already exists!'%user.username)
+        return json.dumps({'next': url_for('users.useradd')})
+        
+
 @users.route('/userstatus', methods=['POST'])
 @login_required
 def userstatus():
@@ -50,5 +75,14 @@ def changepasswd():
     data = request.form.to_dict()
     user = Users.query.filter_by(id=data.get('id')).first_or_404()
     user.password = data.get('password1')
+    db.session.commit()
+    return json.dumps({'next': url_for('users.userlist')})
+
+@users.route('/delete', methods=['POST'])
+@login_required
+def userdelete():
+    data = request.form.to_dict()
+    user = Users.query.filter_by(id=data.get('id')).first_or_404()
+    db.session.delete(user)
     db.session.commit()
     return json.dumps({'next': url_for('users.userlist')})

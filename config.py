@@ -7,10 +7,10 @@ class Config:
         pass
 
 class DevelopmentConfig(Config):
-    SQLALCHEMY_DATABASE_URI='mysql+pymysql://root:123456@192.168.2.100:3306/flask_ops?charset=utf8'
+    SQLALCHEMY_DATABASE_URI='mysql+pymysql://root:123456@172.16.10.11:3306/flask_ops?charset=utf8'
 
 class ProductionConfig(Config):
-    SQLALCHEMY_DATABASE_URI='mysql+pymysql://root:123456@localhost:3306/flask_ops?charset=utf8'
+    SQLALCHEMY_DATABASE_URI='mysql+pymysql://root:123456@172.16.10.11:3306/flask_ops?charset=utf8'
 
 config = {
     'dev': DevelopmentConfig,

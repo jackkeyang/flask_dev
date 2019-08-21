@@ -13,7 +13,14 @@
 <!-- Advanced Tables -->
 <div class="panel panel-default">
     <div class="panel-heading">
-        用户列表
+        <div class="row">
+            <div class="col-md-6">
+                用户列表
+            </div>
+            <div class="col-md-6 text-right">
+                <a type="button" class="btn btn-primary" href="{{ url_for('users.useradd') }}">添加用户</a>
+            </div>
+        </div>
     </div>
     <div class="panel-body">
         <div class="table-responsive">
@@ -62,7 +69,7 @@
                                             <li><a href="javascript:void(0);" data-id="{{ userinfo.id }}" onclick="showPasswdModal(this)">修改密码</a></li>
                                         </ul>
                                     </div>
-                                    <button data-id="{{ userinfo.id }}" type="button" class="btn btn-danger btn-xs">删除</button>
+                                    <button data-id="{{ userinfo.id }}" data-name="{{ userinfo.username }}" type="button" class="btn btn-danger btn-xs" onclick="showDeleteModal(this)" {% if userinfo.username == "admin"%} disabled="disabled" {% endif %}>删除</button>
                                 </th>
                             {% endif %}
                         </tr>
@@ -80,7 +87,6 @@
     </div>
 </div>
 
-
 <!-- Change Password Modal -->
 <div class="modal fade" id="PasswdModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
     <div class="modal-dialog" role="document">
@@ -90,33 +96,62 @@
                     <h4 class="modal-title" id="myModalLabel">修改密码：</h4>
                 </div>
                 <form role="form" id="PasswdForm">
-                <div class="modal-body">
-                    
-                    <input type="hidden"  name="id" id="passwdid">
-                    <div class="form-group">
-                        <label>新密码：</label>
-                        <input type="password" class="form-control" name="password1">
+                    <div class="modal-body">
+                        
+                        <input type="hidden"  name="id" id="passwdid">
+                        <div class="form-group">
+                            <div class='row'>
+                            <div class='col-md-6'>
+                            <label>新密码：</label>
+                            <input type="password" class="form-control" name="password1" data-rule="密码: required;password;">
+                            </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class='row'>
+                            <div class='col-md-6'>
+                            <label>确认密码：</label>
+                            <input type="password" class="form-control" name="password2" data-rule="确认密码: match(password1);">
+                            </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>确认密码：</label>
-                        <input type="password" class="form-control" name="password2">
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="button" class="btn btn-primary" id="ChangePasswd">保存</button>
                     </div>
-                            
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                    <button type="button" class="btn btn-primary" id="ChangePasswd">保存</button>
-                </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
 
+<!-- delete user modal -->
+<div class="modal fade bs-example-modal-sm" id="DeleteModal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+  <div class="modal-dialog modal-sm" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">删除用户：</h4>
+        </div>
+        <form role="form" id="DeleteForm">
+            <div class="modal-body">
+                <input type="hidden" name="id" id="userid">
+                <h3 id="deleteModalLabel" class="text-danger"></h3>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" id="Delete">确认</button>
+            </div>
+        </form>
+    </div>
+  </div>
+</div>
 
 {% endblock  content %}
 
 {% block js%}
+<script src="/static/plug/validator/jquery.validator.js?local=zh-CN"></script>
 <script>
 function status(obj, uid, status){
     $.post('/users/userstatus', {id: uid, status: status}, function(data){
@@ -137,9 +172,24 @@ function showPasswdModal(obj){
     $('#PasswdModal').modal('show')
 }
 
+function showDeleteModal(obj){
+    var id=$(obj).attr("data-id")
+    var name=$(obj).attr("data-name")
+    $('#userid').val(id)
+    $("#deleteModalLabel").text("确认删除用户: " + name + " ?")
+    $('#DeleteModal').modal('show')
+}
 
 $("#ChangePasswd").on("click",function(){
     $.post("/users/changepasswd", $("#PasswdForm").serialize(), function(data){
+        data = JSON.parse(data)
+        location.href=data['next']
+    })
+    return false
+})
+
+$("#Delete").on("click",function(){
+    $.post("/users/delete", $("#DeleteForm").serialize(), function(data){
         data = JSON.parse(data)
         location.href=data['next']
     })
