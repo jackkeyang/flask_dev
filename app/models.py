@@ -91,4 +91,36 @@ class Users(UserMixin, db.Model):
 def load_user(user_id):
     return Users.query.get(int(user_id))
 
+host_tags = db.Table('host_tags',
+                    db.Column('host_id', db.Integer, db.ForeignKey('hosts.id')),
+                    db.Column('tag_id', db.Integer, db.ForeignKey('tags.id'))
+)
+
+class Hosts(db.Model):
+    __tablename__ = 'hosts'
+    id = db.Column(db.Integer, primary_key=True)
+    hostname = db.Column(db.String(64))
+    public_ip = db.Column(db.String(15), unique=True)
+    local_ip = db.Column(db.String(15), unique=True)
+    system = db.Column(db.String(15))
+    cpus = db.Column(db.Integer)
+    memory = db.Column(db.Integer)
+    status = db.Column(db.Boolean)
+
+    tags = db.relationship('Tags', backref='host', secondary=host_tags)
+    disk = db.relationship('Disks', backref='host', lazy='dynamic')
+    
+
+class Tags(db.Model):
+    __tablename__ = 'tags'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64))
+
+class Disks(db.Model):
+    __tablename__ = 'disks'
+    id = db.Column(db.Integer, primary_key=True)
+    diskname = db.Column(db.String(12))
+    size = db.Column(db.Integer)
+    host_id = db.Column(db.Integer,db.ForeignKey('hosts.id'))
+
 

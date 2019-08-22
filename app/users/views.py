@@ -2,8 +2,9 @@
 from . import users
 from flask import render_template, request, url_for, redirect, flash, session, jsonify
 from ..models import Users, db
-from flask_login import login_required
+from flask_login import login_required, current_user
 import json
+from ..utils.decorators import role_required
 
 @users.route('/userlist')
 @login_required
@@ -33,6 +34,7 @@ def userinfo():
 
 @users.route('/useradd', methods=['GET', 'POST'])
 @login_required
+@role_required('ADMIN')
 def useradd():
     if request.method == 'GET':
         return render_template('useradd.html')
@@ -44,7 +46,6 @@ def useradd():
         else:
             data['status'] = False
 
-        print data
         user = Users.query.filter_by(username=data.get('username')).first()
         if not user:
             user = Users(**data)
@@ -71,6 +72,7 @@ def userstatus():
 
 @users.route('/changepasswd', methods=['POST'])
 @login_required
+@role_required('ADMIN')
 def changepasswd():
     data = request.form.to_dict()
     user = Users.query.filter_by(id=data.get('id')).first_or_404()
@@ -80,6 +82,7 @@ def changepasswd():
 
 @users.route('/delete', methods=['POST'])
 @login_required
+@role_required('ADMIN')
 def userdelete():
     data = request.form.to_dict()
     user = Users.query.filter_by(id=data.get('id')).first_or_404()

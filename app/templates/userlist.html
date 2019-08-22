@@ -17,9 +17,11 @@
             <div class="col-md-6">
                 用户列表
             </div>
-            <div class="col-md-6 text-right">
-                <a type="button" class="btn btn-primary" href="{{ url_for('users.useradd') }}">添加用户</a>
-            </div>
+            {% if current_user.role == 'ADMIN' %}
+                <div class="col-md-6 text-right">
+                    <a type="button" class="btn btn-primary" href="{{ url_for('users.useradd') }}">添加用户</a>
+                </div>
+            {% endif %}
         </div>
     </div>
     <div class="panel-body">
@@ -41,7 +43,9 @@
                 <tbody>
                     {% for userinfo in pagination.items %}
                         <tr class="gradeX">
-                            <th class="text-center">{{userinfo.username}}</th>
+                            <th class="text-center">
+                                {% if current_user.role == 'ADMIN' %}<a href={{ url_for('users.userinfo', uid=userinfo.id) }}>{% endif %}{{userinfo.username}}</a>
+                            </th>
                             <th class="text-center">{{userinfo.name_cn}}</th>
                             <th class="text-center">{{userinfo.role}}</th>
                             <th class="text-center">{{userinfo.phone}}</th>

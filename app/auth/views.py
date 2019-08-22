@@ -1,6 +1,6 @@
 #coding=utf8
 from . import auth
-from flask import render_template, request, url_for, redirect, flash, session
+from flask import render_template, request, url_for, redirect, flash, session, g
 from flask_login import login_user, logout_user, login_required, current_user
 from ..models import Users
 

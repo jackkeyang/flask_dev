@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block  breadcrumb_big %}
+资产管理
+{% endblock %}
+
+{% block  breadcrumb_small %}
+添加主机
+{% endblock %}
+
+{% block  content %}
+<!-- Advanced Tables -->
+<div class="panel panel-default">
+    <div class="panel-heading">
+        添加主机
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-lg-6 col-lg-offset-1">
+                <form role="form" id="addForm">
+                    <div class="form-group">
+                        <label>主机名：</label>
+                        <input class="form-control" name="hostname"
+                            data-rule="required;hostname"
+                            data-rule-hostname="[/^[\w\d]{4,20}$/, '必须包含4-20个数字、字母或下划线']"
+                            data-tip="主机名必须是数字、字母或下划线"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label>公网IP：</label>
+                        <input class="form-control" name="public_ip"
+                            data-rule="required;public"
+                            data-rule-public="[/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/, '请填写正确IP']"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label>公网IP：</label>
+                        <input class="form-control" name="local_ip"
+                            data-rule="required;local"
+                            data-rule-local="[/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/, '请填写正确IP']"
+                        >
+                    </div>
+                    
+
+                    {% for message in get_flashed_messages() %}
+                        <div class="alert alert-danger">
+                            <button type="button" class="close" data-dismiss="alert">&times;</button>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+
+                    <div class="form-group text-center">
+                    <button class="btn btn-primary" id="addbtn">添加</button>
+                    <button type="reset" class="btn btn-default">重置</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="/static/plug/validator/jquery.validator.js?local=zh-CN"></script>
+
+<script>
+$("#addbtn").on("click",function(){
+    $.post("/host/hostadd", $("#addForm").serialize(), function(data){
+        data = JSON.parse(data)
+        console.log(data)
+        location.href=data['next']
+    })
+    return false
+})
+</script>
+{% endblock %}

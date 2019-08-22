@@ -1,6 +1,57 @@
 {% extends "base.html" %}
 {% block  content %}
-<div id="page-wrapper" >
-Dashboard
+<div class="row">
+    <div class="col-md-4 col-sm-12 col-xs-12">
+        <div class="panel panel-primary text-center no-boder bg-color-green green">
+            <div class="panel-left pull-left green">
+                <i class="fa fa-users fa-5x fa-5x"></i>
+                
+            </div>
+            <div class="panel-right pull-right">
+                <h3>2 / 10</h3>
+                <strong> 用户</strong>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-12 col-xs-12">
+        <div class="panel panel-primary text-center no-boder bg-color-blue blue">
+                <div class="panel-left pull-left blue">
+                <i class="fa fa-hdd-o fa-5x"></i>
+                </div>
+                
+            <div class="panel-right pull-right">
+            <h3>10 / 10 </h3>
+                <strong> 资产</strong>
+
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-12 col-xs-12">
+        <div class="panel panel-primary text-center no-boder bg-color-red red">
+            <div class="panel-left pull-left red">
+                <i class="fa fa fa-cog fa-5x"></i>
+                
+            </div>
+            <div class="panel-right pull-right">
+                <h3>3 </h3>
+                <strong> 应用 </strong>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    Line Chart
+                </div>
+                <div class="panel-body">
+                    <div id="morris-line-chart"></div>
+                </div>
+            </div>  
+        </div>		
+    </div>
+
 </div>
 {% endblock %}

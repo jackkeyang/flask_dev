@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% import "_macors.html" as macors %}
+
+{% block  breadcrumb_big %}
+资产管理
+{% endblock %}
+
+{% block  breadcrumb_small %}
+主机列表
+{% endblock %}
+
+{% block  content %}
+<!-- Advanced Tables -->
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <div class="row">
+            <div class="col-md-6">
+                主机列表
+            </div>
+            {% if current_user.role == 'ADMIN' %}
+                <div class="col-md-6 text-right">
+                    <a type="button" class="btn btn-primary" href="{{ url_for('hosts.hostadd') }}">添加主机</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered table-hover" id="dataTables-example">
+                <thead>
+                    <tr>
+                        <th class="text-center">主机名</th>
+                        <th class="text-center">公网IP</th>
+                        <th class="text-center">内网IP</th>
+                        <th class="text-center">系统</th>
+                        <th class="text-center">CPU</th>
+                        <th class="text-center">内存</th>
+                        <th class="text-center">磁盘</th>
+                        <th class="text-center">状态</th>
+                        {% if current_user.role == 'ADMIN' %}
+                            <th class="text-center">操作</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for hostinfo in pagination.items %}
+                        <tr class="gradeX">
+                            <th class="text-center">
+                                {% if current_user.role == 'ADMIN' %}<a href="#">{% endif %}{{hostinfo.hostname}}</a>
+                            </th>
+                            <th class="text-center">{{hostinfo.public_ip}}</th>
+                            <th class="text-center">{{hostinfo.local_ip}}</th>
+                            <th class="text-center">
+                                {% if hostinfo.system == 'CentOS'%}
+                                    <img src='/static/image/cent-os.png' width='30'>
+                                {% elif hostinfo.system == 'Debian'%}
+                                    <img src='/static/image/debian-os.png' width='30'>
+                                {% elif hostinfo.system == 'Windows'%}
+                                    <img src='/static/image/windows.png' width='30'>
+                                {% endif %}
+                            </th>
+                            <th class="text-center">{{hostinfo.cpus}}</th>
+                            <th class="text-center">{{hostinfo.memory}}</th>
+                            <th class="text-center">
+                                {% for disk in hostinfo.disk %}
+                                    {{ disk.diskname }} : {{ disk.size}} G<br>
+                                {% endfor %}
+                            </th>
+                            <th class="text-center">{{hostinfo.status}}</th>
+                            <th class="text-center">
+                                <button data-id="{{ hostinfo.id }}" data-name="{{ hostinfo.hostname }}" type="button" class="btn btn-danger btn-xs" >删除</button>
+                            </th>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class='row'>
+                <div class="col-md-12 text-right">
+                    {{ macors.pagination_widget(pagination, "hosts.hostlist") }}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock  content %}
+
+{% block js%}
+<script src="/static/plug/validator/jquery.validator.js?local=zh-CN"></script>
+
+{% endblock %}
