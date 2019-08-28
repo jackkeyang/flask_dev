@@ -107,14 +107,35 @@ class Hosts(db.Model):
     memory = db.Column(db.Integer)
     status = db.Column(db.Boolean)
 
+    system = db.Column(db.Integer,db.ForeignKey('system.id'))
     tags = db.relationship('Tags', backref='host', secondary=host_tags)
     disk = db.relationship('Disks', backref='host', lazy='dynamic')
+    
+    def to_json(self):
+        return {
+            'id': self.id,
+            'hostname': self.hostname,
+            'public_ip': self.public_ip,
+            'local_ip': self.local_ip,
+            'system': self.system if self.system else '',
+            'cpus': self.cpus if self.cpus else '',
+            'memory': self.memory if self.memory else '',
+            'tags': [ tag.to_json() for tag in self.tags ] if self.tags else '',
+            'disk': [ d.to_json() for d in self.disk.all() ] if self.disk.all() else '',
+        }
     
 
 class Tags(db.Model):
     __tablename__ = 'tags'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64))
+    hosts = db.relationship('Hosts', backref='tag', secondary=host_tags)
+
+    def to_json(self):
+        return {
+            'id': self.id,
+            'name': self.name
+        }
 
 class Disks(db.Model):
     __tablename__ = 'disks'
@@ -123,4 +144,15 @@ class Disks(db.Model):
     size = db.Column(db.Integer)
     host_id = db.Column(db.Integer,db.ForeignKey('hosts.id'))
 
+    def to_json(self):
+        return {
+            'diskname': self.diskname,
+            'size': self.size
+        }
 
+class System(db.Model):
+    __tablename__ = 'system'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(12))
+    img = db.Column(db.String(128))
+    host = db.relationship('Hosts', backref='systems', lazy='dynamic')

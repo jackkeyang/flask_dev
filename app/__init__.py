@@ -31,7 +31,7 @@ def create_app(app_name):
     app.register_blueprint(users, url_prefix='/users')
 
     from hosts import hosts
-    app.register_blueprint(hosts, url_prefix='/host')
+    app.register_blueprint(hosts, url_prefix='/hosts')
 
     from api_1_0 import api
     app.register_blueprint(api, url_prefix='/api/v1.0')

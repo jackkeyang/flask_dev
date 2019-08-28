@@ -65,7 +65,7 @@
 
 <script>
 $("#addbtn").on("click",function(){
-    $.post("/host/hostadd", $("#addForm").serialize(), function(data){
+    $.post("/hosts/hostadd", $("#addForm").serialize(), function(data){
         data = JSON.parse(data)
         console.log(data)
         location.href=data['next']

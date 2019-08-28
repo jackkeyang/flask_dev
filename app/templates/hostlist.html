@@ -36,6 +36,7 @@
                         <th class="text-center">CPU</th>
                         <th class="text-center">内存</th>
                         <th class="text-center">磁盘</th>
+                        <th class="text-center">标签</th>
                         <th class="text-center">状态</th>
                         {% if current_user.role == 'ADMIN' %}
                             <th class="text-center">操作</th>
@@ -46,18 +47,12 @@
                     {% for hostinfo in pagination.items %}
                         <tr class="gradeX">
                             <th class="text-center">
-                                {% if current_user.role == 'ADMIN' %}<a href="#">{% endif %}{{hostinfo.hostname}}</a>
+                                {% if current_user.role == 'ADMIN' %}<a href={{ url_for("hosts.hostinfo", id=hostinfo.id) }}>{% endif %}{{hostinfo.hostname}}</a>
                             </th>
                             <th class="text-center">{{hostinfo.public_ip}}</th>
                             <th class="text-center">{{hostinfo.local_ip}}</th>
                             <th class="text-center">
-                                {% if hostinfo.system == 'CentOS'%}
-                                    <img src='/static/image/cent-os.png' width='30'>
-                                {% elif hostinfo.system == 'Debian'%}
-                                    <img src='/static/image/debian-os.png' width='30'>
-                                {% elif hostinfo.system == 'Windows'%}
-                                    <img src='/static/image/windows.png' width='30'>
-                                {% endif %}
+                                <img src="{{hostinfo.systems.img}}" width='30'>
                             </th>
                             <th class="text-center">{{hostinfo.cpus}}</th>
                             <th class="text-center">{{hostinfo.memory}}</th>
@@ -66,6 +61,7 @@
                                     {{ disk.diskname }} : {{ disk.size}} G<br>
                                 {% endfor %}
                             </th>
+                            <th class="text-center">{% for tag in hostinfo.tags %}{{ tag.name }}&nbsp;{% endfor %}</th>
                             <th class="text-center">{{hostinfo.status}}</th>
                             <th class="text-center">
                                 <button data-id="{{ hostinfo.id }}" data-name="{{ hostinfo.hostname }}" type="button" class="btn btn-danger btn-xs" >删除</button>
@@ -84,9 +80,9 @@
         </div>
     </div>
 </div>
+
 {% endblock  content %}
 
 {% block js%}
 <script src="/static/plug/validator/jquery.validator.js?local=zh-CN"></script>
-
 {% endblock %}

@@ -2,7 +2,8 @@
 from . import auth
 from flask import render_template, request, url_for, redirect, flash, session, g
 from flask_login import login_user, logout_user, login_required, current_user
-from ..models import Users
+from ..models import Users, Hosts
+import app
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
@@ -24,7 +25,9 @@ def login():
 @auth.route('/dashboard')
 @login_required
 def dashboard():
-    return render_template('dashboard.html')
+    users = Users.query.count()
+    hosts = Hosts.query.count()
+    return render_template('dashboard.html', hosts=hosts, users=users)
 
 @auth.route('/logout')
 def logout():
