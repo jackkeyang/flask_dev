@@ -27,9 +27,15 @@ def hostinfo():
         host = Hosts.query.filter_by(id=data.get("id")).first_or_404()
         host.public_ip = data.get("public_ip")
         host.local_ip = data.get("local_ip")
-        for t in tags:
-            tag = Tags.query.get(t)
-            host.tags.append(tag)
+
+        tagobjs = [ Tags.query.get(t) for t in tags]
+        hosttags = host.tags.all()
+        deltags = list(set(hosttags) - set(tagobjs))
+        addtags = list(set(tagobjs) - set(hosttags))
+
+        map(lambda t: host.tags.remove(t), deltags)
+        map(lambda t: host.tags.append(t), addtags)
+
         db.session.commit()
         return json.dumps({'next': url_for('hosts.hostlist')})
 
@@ -37,20 +43,36 @@ def hostinfo():
 @login_required
 def hostadd():
     if request.method == 'GET':
-        return render_template('hostadd.html')
+        tags = Tags.query.all()
+        return render_template('hostadd.html', tags=tags)
     else:
         data = request.form.to_dict()
+        tags = request.form.getlist('tags')
         host = Hosts.query.filter(or_(Hosts.hostname==data.get('hostname'), 
                                        Hosts.public_ip==data.get('public_ip'),
                                        Hosts.local_ip==data.get('local_ip'))).first()
         if not host:
-            host = Hosts(**data)
+            host = Hosts(hostname = data.get('hostname'),
+                         public_ip = data.get('public_ip'),
+                         local_ip = data.get('local_ip'))
+            for t in tags:
+                tag = Tags.query.filter_by(id=t).first()
+                host.tags.append(tag)
             db.session.add(host)
             db.session.commit()
             return json.dumps({'next': url_for('hosts.hostlist')})
         else:
             flash(u'%s 已存在!'%host.hostname)
             return json.dumps({'next': url_for('hosts.hostadd')})
+
+@hosts.route('/delete', methods=['POST'])
+@login_required
+def delete():
+    data = request.form.to_dict()
+    host = Hosts.query.filter_by(id=data.get('id')).first_or_404()
+    db.session.delete(host)
+    db.session.commit()
+    return json.dumps({'next': url_for('hosts.hostlist')})
 
 @hosts.route('/tags', methods=['GET', 'POST'])
 @login_required
@@ -75,8 +97,7 @@ def tags():
 @login_required
 def deltag():
     data = request.form.to_dict()
-    tag = Tags.query.get(data.get('id'))
-    if tag:
-        db.session.delete(tag)
-        db.session.commit()
+    tag = Tags.query.filter_by(id=data.get('id')).first_or_404()
+    db.session.delete(tag)
+    db.session.commit()
     return json.dumps({'next': url_for('hosts.tags')})

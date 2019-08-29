@@ -42,7 +42,7 @@
                             
                             <th class="text-center">{{tag.name}}</th>
                                                         
-                            <th class="text-center">{{ tag.hosts | length}}</th>
+                            <th class="text-center">{{ tag.hosts.count() }}</th>
                             {% if current_user.role == 'ADMIN' %}
                                 <th class="text-center">
                                     <button data-id="{{ tag.id }}" data-name="{{ tag.name }}" id="deltag" type="button" class="btn btn-danger btn-xs" onclick=showDeleteModal(this) >删除</button>

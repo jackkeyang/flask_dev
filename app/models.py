@@ -92,8 +92,8 @@ def load_user(user_id):
     return Users.query.get(int(user_id))
 
 host_tags = db.Table('host_tags',
-                    db.Column('host_id', db.Integer, db.ForeignKey('hosts.id')),
-                    db.Column('tag_id', db.Integer, db.ForeignKey('tags.id'))
+                    db.Column('host_id', db.Integer, db.ForeignKey('hosts.id', ondelete='CASCADE')),
+                    db.Column('tag_id', db.Integer, db.ForeignKey('tags.id', ondelete='CASCADE'))
 )
 
 class Hosts(db.Model):
@@ -102,13 +102,12 @@ class Hosts(db.Model):
     hostname = db.Column(db.String(64))
     public_ip = db.Column(db.String(15), unique=True)
     local_ip = db.Column(db.String(15), unique=True)
-    system = db.Column(db.String(15))
     cpus = db.Column(db.Integer)
     memory = db.Column(db.Integer)
     status = db.Column(db.Boolean)
 
     system = db.Column(db.Integer,db.ForeignKey('system.id'))
-    tags = db.relationship('Tags', backref='host', secondary=host_tags)
+    tags = db.relationship('Tags', backref='host', secondary=host_tags, cascade="all, delete", passive_deletes=True, lazy='dynamic')
     disk = db.relationship('Disks', backref='host', lazy='dynamic')
     
     def to_json(self):
@@ -129,8 +128,8 @@ class Tags(db.Model):
     __tablename__ = 'tags'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64))
-    hosts = db.relationship('Hosts', backref='tag', secondary=host_tags)
-
+    hosts = db.relationship('Hosts', backref='tag', secondary=host_tags, cascade="all, delete", passive_deletes=True, lazy='dynamic')
+    
     def to_json(self):
         return {
             'id': self.id,

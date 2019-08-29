@@ -62,9 +62,13 @@
                                 {% endfor %}
                             </th>
                             <th class="text-center">{% for tag in hostinfo.tags %}{{ tag.name }}&nbsp;{% endfor %}</th>
-                            <th class="text-center">{{hostinfo.status}}</th>
+                            {% if hostinfo.status == True %}
+                                <th class="text-center text-success">在线</th>
+                            {% else %}
+                                <th class="text-center text-danger">离线</th>
+                            {% endif %}
                             <th class="text-center">
-                                <button data-id="{{ hostinfo.id }}" data-name="{{ hostinfo.hostname }}" type="button" class="btn btn-danger btn-xs" >删除</button>
+                                <button data-id="{{ hostinfo.id }}" data-name="{{ hostinfo.hostname }}" type="button" class="btn btn-danger btn-xs" onclick="showDeleteModal(this)" >删除</button>
                             </th>
                         </tr>
                     {% endfor %}
@@ -81,8 +85,47 @@
     </div>
 </div>
 
+<!-- delete host modal -->
+<div class="modal fade bs-example-modal-sm" id="DeleteModal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+  <div class="modal-dialog modal-sm" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">删除主机：</h4>
+        </div>
+        <form role="form" id="DeleteForm">
+            <div class="modal-body">
+                <input type="hidden" name="id" id="hostid">
+                <h3 id="deleteModalLabel" class="text-danger"></h3>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" id="Delete">确认</button>
+            </div>
+        </form>
+    </div>
+  </div>
+</div>
 {% endblock  content %}
 
 {% block js%}
 <script src="/static/plug/validator/jquery.validator.js?local=zh-CN"></script>
+
+<script>
+function showDeleteModal(obj){
+    var id=$(obj).attr("data-id")
+    var name=$(obj).attr("data-name")
+    $('#hostid').val(id)
+    $("#deleteModalLabel").text("确认删除主机: " + name + " ?")
+    $('#DeleteModal').modal('show')
+}
+
+$("#Delete").on("click",function(){
+    $.post("/hosts/delete", $("#DeleteForm").serialize(), function(data){
+        data = JSON.parse(data)
+        location.href=data['next']
+    })
+    return false
+})
+</script>
 {% endblock %}
