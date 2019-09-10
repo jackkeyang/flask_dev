@@ -5,7 +5,7 @@ from app import db
 from app.models import *
 import os
 
-app = create_app(os.getenv('env'))
+app = create_app('dev')
 migrate = Migrate(app, db)
 manager = Manager(app)
 

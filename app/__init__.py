@@ -14,13 +14,13 @@ login_manager.login_view = 'auth.login'
 
 def create_app(app_name):
     app = Flask(__name__)
+    app.config.from_object('schduler_config')
     app.config.from_object(config[app_name])
-    app.config.from_object('app.schduler')
     db.init_app(app)
 
-    # scheduler = APScheduler()
-    # scheduler.init_app(app)
-    # scheduler.start()
+    scheduler = APScheduler()
+    scheduler.init_app(app)
+    scheduler.start()
 
     login_manager.init_app(app)
 
