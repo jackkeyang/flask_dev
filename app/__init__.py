@@ -33,6 +33,9 @@ def create_app(app_name):
     from hosts import hosts
     app.register_blueprint(hosts, url_prefix='/hosts')
 
+    from jobs import jobs
+    app.register_blueprint(jobs, url_prefix='/jobs')
+
     from api_1_0 import api
     app.register_blueprint(api, url_prefix='/api/v1.0')
 

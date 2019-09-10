@@ -1,0 +1,347 @@
+{% extends "base.html" %}
+{% import "_macors.html" as macors %}
+
+{% block  breadcrumb_big %}
+工单管理
+{% endblock %}
+
+{% block  breadcrumb_small %}
+服务申请
+{% endblock %}
+
+{% block css %}
+<link href="/static/plug/select2/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block  content %}
+<div class="panel panel-default">    
+    <div class="panel-heading">
+    <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation"><a href="#addapps" data-toggle="tab">申请服务</a></li>
+        <li role="presentation" class="active"><a href="#reviewapp" data-toggle="tab">待处理</a></li>
+        <li role="presentation"><a href="#finishapp" data-toggle="tab">已完成</a></li>
+    </ul>
+    </div>
+    
+    <div class="tab-content">
+        <!-- 服务申请 -->
+        <div role="tabpanel" class="tab-pane" id="addapps">
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-lg-6 col-lg-offset-1">
+                        <form role="form" id="addForm">
+                            <div class="form-group">
+                                <label>服务名：</label>
+                                <input class="form-control" name="name"
+                                    data-rule="required;appname"
+                                    data-rule-appname="[/^[\w\d]{4,20}$/, '必须包含4-20个数字、字母或下划线']">
+                            </div>
+                            <div class="form-group">
+                                <label>端口：</label>
+                                <input class="form-control" name="port" disabled="disabled">
+                            </div>
+
+                            <div class="form-group">
+                                <label>说明：</label>
+                                <input class="form-control" name="notes"
+                                data-rule="required;notes"
+                                data-rule-notes="[/^[0-9\u0391-\uFFE5]+$/, '请填写中文字符']">
+                            </div>
+                            <div class="form-group text-center">
+                                <button class="btn btn-default" id="addappsbtn">申请</button>
+                                <button type="reset" class="btn btn-default">重置</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 待处理 -->
+        <div role="tabpanel" class="tab-pane  active" id="reviewapp">
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered table-hover" id="dataTables-example">
+                        <thead>
+                            <tr>
+                                <th class="text-center">服务名</th>
+                                <th class="text-center">端口</th>
+                                <th class="text-center">注释</th>
+                                <th class="text-center">申请人</th>
+                                <th class="text-center">状态</th>
+                                <th class="text-center">申请时间</th>
+                                {% if current_user.role == 'ADMIN' %}
+                                <th class="text-center">操作</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for job in reviewjobs.items %}
+                                <form role="form" id="reviewForm">
+                                    <tr class="gradeX">
+                                        <th class="text-center">{{ job.name }}</th>
+                                        <th class="text-center text-warning">待分配</th>
+                                        <th class="text-center">{{ job.notes }}</th>
+                                        <th class="text-center">{{ job.users.username }}</th>
+                                        {% if job.status == 0 %}
+                                            <th class="text-center text-warning">待处理</th>
+                                        {% else %}
+                                            <th class="text-center text-success">已完成</th>
+                                        {% endif %}
+                                        <th class="text-center">{{ job.datetime }}</th>
+
+                                        {% if current_user.role == 'ADMIN' %}
+                                        <th class="text-center">
+                                            <button data-id="{{ job.id }}" type="button" class="btn btn-info btn-xs" onclick="showJobModal(this)">处理工单</button>
+                                            <button data-id="{{ job.id }}" type="button" class="btn btn-danger btn-xs" onclick="endJobModal(this)">关闭工单</button>
+                                        </th>
+                                        {% endif %}
+                                    </tr>
+                                </form>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <div class='row'>
+                        <div class="col-md-12 text-right">
+                            {{ macors.pagination_widget(reviewjobs, "jobs.appjob") }}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- 已处理 -->
+        <div role="tabpanel" class="tab-pane" id="finishapp">
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered table-hover" id="dataTables-example">
+                        <thead>
+                            <tr>
+                                <th class="text-center">服务名</th>
+                                <th class="text-center">端口</th>
+                                <th class="text-center">申请人</th>
+                                <th class="text-center">状态</th>
+                                <th class="text-center">说明</th>
+                                <th class="text-center">操作时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for job in finishjobs.items %}
+                                <tr class="gradeX">
+                                    <th class="text-center">{{ job.name }}</th>
+                                    <th class="text-center text-warning">{{ job.port }}</th>
+                                    <th class="text-center">{{ job.users.username }}</th>
+                                    {% if job.status == 0 %}
+                                        <th class="text-center text-warning">待处理</th>
+                                    {% elif job.status == 1 %}
+                                        <th class="text-center text-success">已完成</th>
+                                    {% else %}
+                                        <th class="text-center text-warning">已关闭</th>
+                                    {% endif %}
+                                    <th class="text-center">{{ job.notes }}</th>
+                                    <th class="text-center">{{ job.datetime }}</th>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <div class='row'>
+                        <div class="col-md-12 text-right">
+                            {{ macors.pagination_widget(reviewjobs, "jobs.appjob") }}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- job model -->
+<div class="modal fade" id="JobModal"  role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">处理工单：</h4>
+                </div>
+                <form role="form" id="JobForm">
+                    <div class="modal-body">
+                        
+                        <input type="hidden" name="id" id="jobid">
+                        <div class="form-group">
+                            <div class='row'>
+                                <div class='col-md-10'>
+                                    <label>服务名：</label>
+                                    <input class="form-control" name="name" id="name" readonly="readonly">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class='row'>
+                                <div class='col-md-10'>
+                                    <label>分配端口：</label>
+                                    <input class="form-control" name="port" data-rule="required; integer[+0]; range(1024~65535, false)">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class='row'>
+                                <div class='col-md-10'>
+                                    <label>备注：</label>
+                                    <input class="form-control" name="notes" id="notes" readonly="readonly">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class='row'>
+                                <div class='col-md-10'>
+                                    <label>申请人：</label>
+                                    <input class="form-control" name="user" id="user" readonly="readonly">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class='row'>
+                                <div class='col-md-10'>
+                                    <label>主机标签：</label>
+                                    <select class="form-control" name="tags" id="tags">
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="messagediv" class="alert alert-danger" role="alert" style="display:none">
+                        <span id="message"></span>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="button" class="btn btn-primary" id="addjob">确认</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- end job model -->
+<div class="modal fade" id="endJobModal"  role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">关闭工单：</h4>
+                </div>
+                <form role="form" id="endJobForm">
+                    <div class="modal-body">
+                        
+                        <input type="hidden" name="id" id="endjobid">
+                        <div class="form-group">
+                            <div class='row'>
+                                <div class='col-md-10'>
+                                    <label>服务名：</label>
+                                    <input class="form-control" name="name" id="endname" readonly="readonly">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class='row'>
+                                <div class='col-md-10'>
+                                    <label>备注：</label>
+                                    <input class="form-control" name="notes" id="endnotes">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="button" class="btn btn-primary" id="endjob">确认</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="/static/plug/select2/js/select2.min.js"></script>
+<script src="/static/plug/validator/jquery.validator.js?local=zh-CN"></script>
+
+
+<script>
+    $('#tags').select2({width: '100%'});
+
+    $("#addappsbtn").on("click",function(){
+        $.post("/jobs/appjob", $("#addForm").serialize(), function(data){
+            data = JSON.parse(data)
+            console.log(data)
+            location.href=data['next']
+        })
+        return false
+    })
+
+    function showJobModal(obj){
+        var jobid = $(obj).attr("data-id")
+        $.get('/jobs/jobinfo', {jobid: jobid}, function(data){
+            data = JSON.parse(data)
+            var name=data['name']
+            var tags=data['tags']
+            var notes=data['notes']
+            var user=data['user']
+            $("#jobid").val(jobid)
+            $("#name").attr("value", name)
+            $("#notes").attr("value", notes)
+            $("#user").attr("value", user)
+            $('#JobModal').modal('show')
+            for(key in tags){
+                tag=tags[key]
+                str="<option value="+tag['id']+">"+tag["name"]+"</option>"
+                $("select").append(str)
+            }
+        })
+    }
+
+    function endJobModal(obj){
+        var jobid = $(obj).attr("data-id")
+        $.get('/jobs/jobinfo', {jobid: jobid}, function(data){
+            data = JSON.parse(data)
+            var name=data['name']
+            var notes=data['notes']
+            $("#endjobid").val(jobid)
+            $("#endname").attr("value", name)
+            $("#endnotes").attr("value", notes)
+            $('#endJobModal').modal('show')
+        })
+    }
+
+    $("#addjob").on("click", function(){
+        $.post("/jobs/jobinfo", $("#JobForm").serialize(), function(data){
+            data = JSON.parse(data)
+            console.log(data)
+
+            if(data['status']=='true'){
+                location.href=data['next']
+            }else{
+                console.log(data['message'])
+                $("#message").text(data['message'])
+                $("#messagediv").show()
+            }
+        })
+        return false
+    })
+
+    $("#endjob").on("click", function(){
+        $.post("/jobs/clock", $("#endJobForm").serialize(), function(data){
+            data = JSON.parse(data)
+            location.href=data['next']
+        })
+        return false
+    })
+</script>
+{% endblock %}

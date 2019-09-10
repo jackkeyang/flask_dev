@@ -5,10 +5,16 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
 from flask_login import UserMixin
 from . import login_manager
+from datetime import datetime
 
 group_users = db.Table('group_user',
-                        db.Column('group_id', db.Integer, db.ForeignKey('groups.id')),
-                        db.Column('user_id', db.Integer, db.ForeignKey('users.id'))
+                        db.Column('group_id', db.Integer, db.ForeignKey('groups.id', ondelete='CASCADE')),
+                        db.Column('user_id', db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'))
+)
+
+user_apps = db.Table('user_apps',
+                        db.Column('apps_id', db.Integer, db.ForeignKey('apps.id', ondelete='CASCADE')),
+                        db.Column('user_id', db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'))
 )
 
 class Group(db.Model):
@@ -32,6 +38,8 @@ class Users(UserMixin, db.Model):
     role = db.Column(db.String(32))
     status = db.Column(db.Boolean)
     group_id = db.relationship('Group', secondary=group_users, backref='users')
+    apps = db.relationship('Apps', secondary=user_apps, backref='user', cascade="all, delete", passive_deletes=True, lazy='dynamic')
+    jobs = db.relationship('AppJobs', backref='users', lazy='dynamic')
 
     @property
     def password(self):
@@ -92,8 +100,8 @@ def load_user(user_id):
     return Users.query.get(int(user_id))
 
 host_tags = db.Table('host_tags',
-                    db.Column('host_id', db.Integer, db.ForeignKey('hosts.id', ondelete='CASCADE')),
-                    db.Column('tag_id', db.Integer, db.ForeignKey('tags.id', ondelete='CASCADE'))
+                    db.Column('host_id', db.Integer, db.ForeignKey('hosts.id', ondelete='CASCADE'), unique=True),
+                    db.Column('tag_id', db.Integer, db.ForeignKey('tags.id', ondelete='CASCADE'), unique=True)
 )
 
 class Hosts(db.Model):
@@ -107,7 +115,8 @@ class Hosts(db.Model):
     status = db.Column(db.Boolean)
 
     system = db.Column(db.Integer,db.ForeignKey('system.id'))
-    tags = db.relationship('Tags', backref='host', secondary=host_tags, cascade="all, delete", passive_deletes=True, lazy='dynamic')
+    tags = db.relationship('Tags', backref=db.backref('host', lazy='dynamic'), secondary=host_tags,
+                             cascade="all, delete-orphan", passive_deletes=True, lazy='dynamic', single_parent=True)
     disk = db.relationship('Disks', backref='host', lazy='dynamic')
     
     def to_json(self):
@@ -123,13 +132,14 @@ class Hosts(db.Model):
             'disk': [ d.to_json() for d in self.disk.all() ] if self.disk.all() else '',
         }
     
-
 class Tags(db.Model):
     __tablename__ = 'tags'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64))
-    hosts = db.relationship('Hosts', backref='tag', secondary=host_tags, cascade="all, delete", passive_deletes=True, lazy='dynamic')
-    
+    # hosts = db.relationship('Hosts', backref=db.backref('tag', lazy='dynamic'), secondary=host_tags, 
+    #                         cascade="all, delete-orphan", passive_deletes=True, lazy='dynamic', single_parent=True)
+    apps = db.relationship('Apps', backref='tag', lazy='dynamic')
+
     def to_json(self):
         return {
             'id': self.id,
@@ -155,3 +165,43 @@ class System(db.Model):
     name = db.Column(db.String(12))
     img = db.Column(db.String(128))
     host = db.relationship('Hosts', backref='systems', lazy='dynamic')
+
+class Apps(db.Model):
+    __tablename__ = 'apps'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(32), unique=True)
+    port = db.Column(db.Integer, unique=True)
+    notes = db.Column(db.String(255))
+
+    tags = db.Column(db.Integer,db.ForeignKey('tags.id'))
+    users = db.relationship('Apps', backref='app', secondary=user_apps, 
+                            cascade="all, delete", passive_deletes=True, lazy='dynamic')
+    
+    def to_json(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'port': self.port,
+            'notes': self.notes,
+            'tags': self.tag
+        }
+
+class AppJobs(db.Model):
+    __tablename__ = 'appjobs'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(32))
+    port = db.Column(db.Integer)
+    notes = db.Column(db.String(255))
+    user = db.Column(db.Integer,db.ForeignKey('users.id'))
+    datetime = db.Column(db.DateTime, default=datetime.now())
+    status = db.Column(db.Integer, default=0) # 0：待处理 1：已处理
+
+    def to_json(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'port': self.port,
+            'notes': self.notes,
+            'user': self.users.username,
+            'datetime': self.datetime.strftime('%Y-%m-%d %H:%M:%S')
+        }

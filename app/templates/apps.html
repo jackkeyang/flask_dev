@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block  breadcrumb_small %}
-标签列表
+业务列表
 {% endblock %}
 
 {% block  content %}
@@ -15,13 +15,8 @@
     <div class="panel-heading">
         <div class="row">
             <div class="col-md-6">
-                标签列表
+                业务列表
             </div>
-            {% if current_user.role == 'ADMIN' %}
-                <div class="col-md-6 text-right">
-                    <a type="button" class="btn btn-primary" id="addtag">添加标签</a>
-                </div>
-            {% endif %}
         </div>
     </div>
     <div class="panel-body">
@@ -29,23 +24,27 @@
             <table class="table table-striped table-bordered table-hover" id="dataTables-example">
                 <thead>
                     <tr>
-                        <th class="text-center">标签名</th>
-                        <th class="text-center">绑定主机数</th>
+                        <th class="text-center">业务名称</th>
+                        <th class="text-center">端口</th>
+                        <th class="text-center">主机标签</th>
+                        <th class="text-center">说明</th>
                         {% if current_user.role == 'ADMIN' %}
                             <th class="text-center">操作</th>
                         {% endif %}
                     </tr>
                 </thead>
                 <tbody>
-                    {% for tag in pagination.items %}
+                    {% for app in pagination.items %}
                         <tr class="gradeX">
                             
-                            <th class="text-center">{{tag.name}}</th>
-                                                        
-                            <th class="text-center">{{ tag.host.count() }}</th>
+                            <th class="text-center">{{ app.name }}</th>
+                            <th class="text-center">{{ app.port }}</th>
+                            <th class="text-center">{{ app.tag.name}}
+                            </th>
+                            <th class="text-center">{{ app.notes }}</th>
                             {% if current_user.role == 'ADMIN' %}
                                 <th class="text-center">
-                                    <button data-id="{{ tag.id }}" data-name="{{ tag.name }}" id="deltag" type="button" class="btn btn-danger btn-xs" onclick=showDeleteModal(this) >删除</button>
+                                    <button data-id="{{ app.id }}" data-name="{{ app.name }}" id="delapp" type="button" class="btn btn-danger btn-xs" onclick=showDeleteModal(this) >删除</button>
                                 </th>
                             {% endif %}
                         </tr>
@@ -55,10 +54,9 @@
 
             <div class='row'>
                 <div class="col-md-12 text-right">
-                    {{ macors.pagination_widget(pagination, "hosts.tags") }}
+                    {{ macors.pagination_widget(pagination, "hosts.applist") }}
                 </div>
             </div>
-
         </div>
     </div>
 </div>
@@ -99,7 +97,7 @@
         </div>
         <form role="form" id="DeleteForm">
             <div class="modal-body">
-                <input type="hidden" name="id" id="tagid">
+                <input type="hidden" name="id" id="appid">
                 <h3 id="deleteModalLabel" class="text-danger"></h3>
             </div>
             <div class="modal-footer">
@@ -117,34 +115,16 @@
 <script src="/static/plug/validator/jquery.validator.js?local=zh-CN"></script>
 
 <script>
-$('#addtag').click(function(){
-    $('#addTagModal').modal('show')
-})
-
-$("#addtagbtn").on("click",function(){
-    $.post("/hosts/tags", $("#addTagForm").serialize(), function(data){
-        data = JSON.parse(data)
-        console.log(data)
-        if(data['status']=='true'){
-            location.href=data['next']
-        }else{
-            $("#message").text(data['message'])
-            $("#messagediv").show()
-        }
-    })
-    return false
-})
-
 function showDeleteModal(obj){
     var id=$(obj).attr("data-id")
     var name=$(obj).attr("data-name")
-    $('#tagid').val(id)
-    $("#deleteModalLabel").text("确认删除标签: " + name + " ?")
+    $('#appid').val(id)
+    $("#deleteModalLabel").text("确认删除服务: " + name + " ?")
     $('#DelTagModal').modal('show')
 }
 
 $("#Delete").on("click",function(){
-    $.post("/hosts/deltag", $("#DeleteForm").serialize(), function(data){
+    $.post("/hosts/delapp", $("#DeleteForm").serialize(), function(data){
         data = JSON.parse(data)
         location.href=data['next']
     })

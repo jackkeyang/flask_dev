@@ -27,8 +27,20 @@
                             </li>
                             
                             <li>
-                                <a href="#">业务管理</a>
+                                <a href="{{ url_for('hosts.applist') }}">业务管理</a>
                             </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#"><i class="fa fa-recycle"></i> 工单系统<span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="{{ url_for('jobs.appjob') }}">服务申请</a>
+                            </li>
+                            <li>
+                                <a href="#">上线申请</a>
+                            </li>
+                            
                         </ul>
                     </li>
                     <li>
@@ -38,9 +50,6 @@
                                 <a href="#">nginx管理</a>
                             </li>
                         </ul>
-                    </li>
-                    <li>
-                        <a href="#"><i class="fa fa-cloud-upload"></i> 代码发布</a>
                     </li>
                     <li>
                         <a href="#"><i class="fa fa-sitemap"></i> Multi-Level Dropdown<span class="fa arrow"></span></a>

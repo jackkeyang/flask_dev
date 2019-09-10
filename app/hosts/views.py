@@ -1,7 +1,7 @@
 #coding=utf8
 from . import hosts
 from flask_login import login_required
-from ..models import Hosts, Tags ,db, System
+from ..models import Hosts, Tags ,db, System, Apps
 from flask import request, render_template, url_for, flash
 from sqlalchemy import or_
 import json
@@ -24,6 +24,7 @@ def hostinfo():
     else:
         data = request.form.to_dict()
         tags = request.form.getlist("tags")
+        print tags
         host = Hosts.query.filter_by(id=data.get("id")).first_or_404()
         host.public_ip = data.get("public_ip")
         host.local_ip = data.get("local_ip")
@@ -32,7 +33,6 @@ def hostinfo():
         hosttags = host.tags.all()
         deltags = list(set(hosttags) - set(tagobjs))
         addtags = list(set(tagobjs) - set(hosttags))
-
         map(lambda t: host.tags.remove(t), deltags)
         map(lambda t: host.tags.append(t), addtags)
 
@@ -101,3 +101,22 @@ def deltag():
     db.session.delete(tag)
     db.session.commit()
     return json.dumps({'next': url_for('hosts.tags')})
+
+@hosts.route('/apps', methods=['GET'])
+@login_required
+def applist():
+    app = Apps.query.filter_by(id=1).first()
+    page = request.args.get('page', 1, type=int)
+    pagination = Apps.query.paginate(page, per_page=10, error_out=False)
+    return render_template('apps.html', pagination=pagination)
+
+@hosts.route('/delapp', methods=['POST'])
+@login_required
+def delapp():
+    data = request.form.to_dict()
+    appid = data.get("id")
+    app = Apps.query.filter_by(id=appid).first_or_404()
+    print app.user
+    db.session.delete(app)
+    db.session.commit()
+    return json.dumps({'next': url_for('hosts.applist')})
