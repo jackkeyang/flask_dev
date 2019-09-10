@@ -30,8 +30,8 @@ def create_app(app_name):
     from users import users
     app.register_blueprint(users, url_prefix='/users')
 
-    from hosts import hosts
-    app.register_blueprint(hosts, url_prefix='/hosts')
+    from assets import assets
+    app.register_blueprint(assets, url_prefix='/assets')
 
     from jobs import jobs
     app.register_blueprint(jobs, url_prefix='/jobs')

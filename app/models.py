@@ -38,7 +38,7 @@ class Users(UserMixin, db.Model):
     role = db.Column(db.String(32))
     status = db.Column(db.Boolean)
     group_id = db.relationship('Group', secondary=group_users, backref='users')
-    apps = db.relationship('Apps', secondary=user_apps, backref='user', cascade="all, delete", passive_deletes=True, lazy='dynamic')
+    apps = db.relationship('Apps', secondary=user_apps, backref='user', lazy='dynamic')
     jobs = db.relationship('AppJobs', backref='users', lazy='dynamic')
 
     @property
@@ -100,8 +100,8 @@ def load_user(user_id):
     return Users.query.get(int(user_id))
 
 host_tags = db.Table('host_tags',
-                    db.Column('host_id', db.Integer, db.ForeignKey('hosts.id', ondelete='CASCADE'), unique=True),
-                    db.Column('tag_id', db.Integer, db.ForeignKey('tags.id', ondelete='CASCADE'), unique=True)
+                    db.Column('host_id', db.Integer, db.ForeignKey('hosts.id', ondelete='CASCADE')),
+                    db.Column('tag_id', db.Integer, db.ForeignKey('tags.id', ondelete='CASCADE'))
 )
 
 class Hosts(db.Model):
@@ -115,8 +115,7 @@ class Hosts(db.Model):
     status = db.Column(db.Boolean)
 
     system = db.Column(db.Integer,db.ForeignKey('system.id'))
-    tags = db.relationship('Tags', backref=db.backref('host', lazy='dynamic'), secondary=host_tags,
-                             cascade="all, delete-orphan", passive_deletes=True, lazy='dynamic', single_parent=True)
+    tags = db.relationship('Tags', backref='host', secondary=host_tags, lazy='dynamic')
     disk = db.relationship('Disks', backref='host', lazy='dynamic')
     
     def to_json(self):
@@ -125,7 +124,7 @@ class Hosts(db.Model):
             'hostname': self.hostname,
             'public_ip': self.public_ip,
             'local_ip': self.local_ip,
-            'system': self.system if self.system else '',
+            'system': self.systems.name if self.system else '',
             'cpus': self.cpus if self.cpus else '',
             'memory': self.memory if self.memory else '',
             'tags': [ tag.to_json() for tag in self.tags ] if self.tags else '',
@@ -136,8 +135,6 @@ class Tags(db.Model):
     __tablename__ = 'tags'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64))
-    # hosts = db.relationship('Hosts', backref=db.backref('tag', lazy='dynamic'), secondary=host_tags, 
-    #                         cascade="all, delete-orphan", passive_deletes=True, lazy='dynamic', single_parent=True)
     apps = db.relationship('Apps', backref='tag', lazy='dynamic')
 
     def to_json(self):
@@ -164,7 +161,7 @@ class System(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(12))
     img = db.Column(db.String(128))
-    host = db.relationship('Hosts', backref='systems', lazy='dynamic')
+    hosts = db.relationship('Hosts', backref='systems', lazy='dynamic')
 
 class Apps(db.Model):
     __tablename__ = 'apps'
@@ -174,8 +171,7 @@ class Apps(db.Model):
     notes = db.Column(db.String(255))
 
     tags = db.Column(db.Integer,db.ForeignKey('tags.id'))
-    users = db.relationship('Apps', backref='app', secondary=user_apps, 
-                            cascade="all, delete", passive_deletes=True, lazy='dynamic')
+    users = db.relationship('Apps', backref='app', secondary=user_apps, lazy='dynamic')
     
     def to_json(self):
         return {

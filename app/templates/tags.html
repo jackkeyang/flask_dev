@@ -30,6 +30,7 @@
                 <thead>
                     <tr>
                         <th class="text-center">标签名</th>
+                        <th class="text-center">绑定主机</th>
                         <th class="text-center">绑定主机数</th>
                         {% if current_user.role == 'ADMIN' %}
                             <th class="text-center">操作</th>
@@ -41,8 +42,8 @@
                         <tr class="gradeX">
                             
                             <th class="text-center">{{tag.name}}</th>
-                                                        
-                            <th class="text-center">{{ tag.host.count() }}</th>
+                            <th class="text-center">{% if tag.host %}{% for host in  tag.host %}{{host.hostname}},&nbsp;{% endfor%}{% endif %}</th>
+                            <th class="text-center">{{ tag.host | count }}</th>
                             {% if current_user.role == 'ADMIN' %}
                                 <th class="text-center">
                                     <button data-id="{{ tag.id }}" data-name="{{ tag.name }}" id="deltag" type="button" class="btn btn-danger btn-xs" onclick=showDeleteModal(this) >删除</button>
@@ -55,7 +56,7 @@
 
             <div class='row'>
                 <div class="col-md-12 text-right">
-                    {{ macors.pagination_widget(pagination, "hosts.tags") }}
+                    {{ macors.pagination_widget(pagination, "asset.tags") }}
                 </div>
             </div>
 
@@ -122,7 +123,7 @@ $('#addtag').click(function(){
 })
 
 $("#addtagbtn").on("click",function(){
-    $.post("/hosts/tags", $("#addTagForm").serialize(), function(data){
+    $.post("/assets/tags", $("#addTagForm").serialize(), function(data){
         data = JSON.parse(data)
         console.log(data)
         if(data['status']=='true'){
@@ -144,7 +145,7 @@ function showDeleteModal(obj){
 }
 
 $("#Delete").on("click",function(){
-    $.post("/hosts/deltag", $("#DeleteForm").serialize(), function(data){
+    $.post("/assets/deltag", $("#DeleteForm").serialize(), function(data){
         data = JSON.parse(data)
         location.href=data['next']
     })

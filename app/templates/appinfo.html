@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block css %}
+<link href="/static/plug/select2/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block  breadcrumb_big %}
+服务管理
+{% endblock %}
+
+{% block  breadcrumb_small %}
+服务信息
+{% endblock %}
+
+{% block  content %}
+<!-- Advanced Tables -->
+<div class="panel panel-default">
+    <div class="panel-heading">
+        服务信息
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-lg-6 col-lg-offset-1">
+                <form role="form" id="updateForm">
+                    <input type="hidden"  name="id" value="{{ app.id }}">
+                    <div class="form-group">
+                        <label>服务名：</label>
+                        <input class="form-control" name="hostanme" value="{{app.name}}" disabled="disabled" >
+                    </div>
+                    <div class="form-group">
+                        <label>端口：</label>
+                        <input class="form-control" name="public_ip" value="{{app.port}}" disabled="disabled">
+                    </div>
+                    <div class="form-group">
+                        <label>主机标签：</label>
+                        <select class="form-control" name="tags" id="tags">
+                            {% for tag in tags %}
+                                <option value="{{ tag.id }}" {% if tag.id == app.tag.id %} selected="selected" {%endif%}>{{ tag.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>备注：</label>
+                        <input class="form-control" name="system" value="{{ app.notes }}" disabled="disabled">
+                    </div>
+                    
+                    <div class="form-group text-center">
+                    <button class="btn btn-default" id="upinfobtn">修改</button>
+                    <button type="reset" class="btn btn-default">重置</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="/static/plug/select2/js/select2.min.js"></script>>
+
+<script>
+$('#tags').select2();
+
+$("#upinfobtn").on("click",function(){
+    $.post("/assets/appinfo", $("#updateForm").serialize(), function(data){
+        data = JSON.parse(data)
+        console.log(data)
+        location.href=data['next']
+    })
+    return false
+})
+</script>
+{% endblock %}

@@ -79,7 +79,7 @@
 <script>
 $('#tags').select2();
 $("#addbtn").on("click",function(){
-    $.post("/hosts/hostadd", $("#addForm").serialize(), function(data){
+    $.post("/assets/hostadd", $("#addForm").serialize(), function(data){
         data = JSON.parse(data)
         console.log(data)
         location.href=data['next']

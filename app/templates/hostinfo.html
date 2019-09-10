@@ -37,7 +37,7 @@
                     </div>
                     <div class="form-group">
                         <label>系统：</label>
-                        <input class="form-control" name="system" value="{{host.system}}" disabled="disabled">
+                        <input class="form-control" name="system" value="{{host.system }}" disabled="disabled">
                     </div>
                     <div class="form-group">
                         <label>CPU：</label>
@@ -79,7 +79,7 @@
 $('#tags').select2();
 
 $("#upinfobtn").on("click",function(){
-    $.post("/hosts/hostinfo", $("#updateForm").serialize(), function(data){
+    $.post("/assets/hostinfo", $("#updateForm").serialize(), function(data){
         data = JSON.parse(data)
         console.log(data)
         location.href=data['next']

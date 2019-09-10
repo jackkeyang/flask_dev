@@ -1,5 +1,5 @@
 from flask import Blueprint
 
-hosts = Blueprint('hosts', __name__)
+assets = Blueprint('asset', __name__)
 
 from . import views
